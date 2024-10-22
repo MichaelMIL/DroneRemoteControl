@@ -1,0 +1,9 @@
+# Example usage
+TOKEN_LENGTH = 16  # Specify the desired length
+
+DRONE_FLIGHT_CONTROLLER_TIME = 60  # Duration of the stream in seconds
+ADMIN_TOKEN = "1234567"
+STREAM_URL = "http://TEST_STREAM_URL"
+
+DRONE_FLIGHT_CONTROLLER_ARM_KEY = "1111"
+DRONE_FLIGHT_CONTROLLER_THROTTLE_KEY = "2222"

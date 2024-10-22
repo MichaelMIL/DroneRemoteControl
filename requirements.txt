@@ -1,1 +1,6 @@
 vgamepad
+"fastapi[all]"
+pyjwt
+"passlib[bcrypt]"
+uvicorn
+jinja2
