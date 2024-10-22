@@ -132,6 +132,7 @@ async def get_drone_controller_access(team_token: str = Depends(verify_token)):
                 "time_left": int(
                     last_stream_start_time + DRONE_FLIGHT_CONTROLLER_TIME - time.time()
                 ),
+                "is_active": True,
             },
         )
     stream_token = get_not_used_stream_from_team_token(team_token)
@@ -146,12 +147,24 @@ async def get_drone_controller_access(team_token: str = Depends(verify_token)):
             last_stream_start_time > 0
             and last_stream_start_time + DRONE_FLIGHT_CONTROLLER_TIME > time.time()
         ):
+
             raise HTTPException(
                 status_code=status.HTTP_226_IM_USED,
                 detail={
                     "message": f"Another team(s) [{fake_db["drone_control_queue"].index(stream_token) + 1}]  is currently controlling the drone (time left: {int((last_stream_start_time + DRONE_FLIGHT_CONTROLLER_TIME - time.time())+(DRONE_FLIGHT_CONTROLLER_TIME*fake_db["drone_control_queue"].index(stream_token)))}s)",
                     "queue_position": fake_db["drone_control_queue"].index(stream_token)
                     + 1,
+                    "time_left": int(
+                        (
+                            last_stream_start_time
+                            + DRONE_FLIGHT_CONTROLLER_TIME
+                            - time.time()
+                        )
+                        + (
+                            DRONE_FLIGHT_CONTROLLER_TIME
+                            * fake_db["drone_control_queue"].index(stream_token)
+                        )
+                    ),
                 },
             )
 
@@ -161,11 +174,33 @@ async def get_drone_controller_access(team_token: str = Depends(verify_token)):
         last_stream_start_time = time.time()
         return {"Drone Control": "Active"}
 
+    if last_stream_start_time + DRONE_FLIGHT_CONTROLLER_TIME - time.time() < 0:
+        active_drone_control_token = ""
+        raise HTTPException(
+            status_code=status.HTTP_226_IM_USED,
+            detail={
+                "message": f"Another team(s) [{fake_db["drone_control_queue"].index(stream_token)}] is currently controlling the drone (time left: {int((DRONE_FLIGHT_CONTROLLER_TIME*(fake_db["drone_control_queue"].index(stream_token))))}s)",
+                "queue_position": fake_db["drone_control_queue"].index(stream_token)
+                + 1,
+                "time_left": int(
+                    DRONE_FLIGHT_CONTROLLER_TIME
+                    * fake_db["drone_control_queue"].index(stream_token)
+                ),
+            },
+        )
+
     raise HTTPException(
         status_code=status.HTTP_226_IM_USED,
         detail={
             "message": f"Another team(s) [{fake_db["drone_control_queue"].index(stream_token) + 1}] is currently controlling the drone (time left: {int((last_stream_start_time + DRONE_FLIGHT_CONTROLLER_TIME - time.time())+(DRONE_FLIGHT_CONTROLLER_TIME*fake_db["drone_control_queue"].index(stream_token)))}s)",
             "queue_position": fake_db["drone_control_queue"].index(stream_token) + 1,
+            "time_left": int(
+                (last_stream_start_time + DRONE_FLIGHT_CONTROLLER_TIME - time.time())
+                + (
+                    DRONE_FLIGHT_CONTROLLER_TIME
+                    * fake_db["drone_control_queue"].index(stream_token)
+                )
+            ),
         },
     )
 

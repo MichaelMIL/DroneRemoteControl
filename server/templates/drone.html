@@ -201,7 +201,7 @@
               if (countdownTimer) {
                 clearInterval(countdownTimer);
               }
-              if (data.detail.time_left) {
+              if (data.detail.time_left && data.detail.is_active) {
                 // Display ACTIVE in green and start countdown timer
                 controllerStatus.innerHTML = `<div class="active-info">ACTIVE</div>`;
 
@@ -216,7 +216,17 @@
                   }
                 }, 1000);
               } else {
-                controllerStatus.innerHTML = `<div class="queue-info">${data.detail.message}</div>`;
+                console.log("timer");
+                let remainingTime = data.detail.time_left; // 60 seconds countdown
+                countdownTimer = setInterval(() => {
+                  if (remainingTime <= 0) {
+                    clearInterval(countdownTimer);
+                    activateFlightController();
+                  } else {
+                    remainingTime--;
+                    controllerStatus.innerHTML = `<div class="queue-info">Another team(s) [1] is currently controlling the drone (time left: ${remainingTime}s)</div>`;
+                  }
+                }, 1000);
               }
             } else if (data["Drone Control"] === "Active") {
               if (countdownTimer) {
